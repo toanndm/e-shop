@@ -32,17 +32,22 @@ namespace API.Controllers
             _productTypeRepo = productTypeRepo;
             _mapper = mapper;
         }
+
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<ProductDTO>>> GetProducts()
+        public async Task<ActionResult<IReadOnlyList<ProductDTO>>> GetProducts(
+            string? sort,
+            int? brandId,
+            int? typeId
+        )
         {
-            var spec = new ProductWithTypeAndBrandSpecification();
+            var spec = new ProductWithTypeAndBrandSpecification(sort, brandId, typeId);
             var products = await _productRepo.ListAllWithSpecAsync(spec);
             return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductDTO>>(products));
         }
+
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-
         public async Task<ActionResult<ProductDTO>> GetProduct(int id)
         {
             var spec = new ProductWithTypeAndBrandSpecification(id);
@@ -50,11 +55,13 @@ namespace API.Controllers
             if (product == null) return NotFound(new ApiResponse(404));
             return _mapper.Map<Product, ProductDTO>(product!);
         }
+
         [HttpGet("types")]
         public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
         {
             return Ok(await _productTypeRepo.ListAllAsync());
         }
+
         [HttpGet("brands")]
         public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductBrands()
         {

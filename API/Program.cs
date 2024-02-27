@@ -13,6 +13,16 @@ string? connectionString = builder.Configuration.GetConnectionString("DefaultCon
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("CorsPolicy", builder =>
+            {
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
 builder.Services.AddDbContext<AppDbContext>(options
     => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -42,6 +52,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("CorsPolicy");
 
 app.UseMiddleware<ExceptionMiddleware>();
 
